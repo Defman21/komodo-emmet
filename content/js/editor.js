@@ -10,18 +10,23 @@ var editorProxy = emmet.exec(function(require, _) {
 	function charsToByte(chars) {
 		return  ko.stringutils.bytelength( editorProxy.getContent().substring(0, chars) );
 	}
+	var koSnippet = false;
 	
 	function createSnippet(text, noIndent) {
-		return {
-			type: 'snippet',
-			name: 'emmet-snippet',
-			parent: {name: 'emmet-parent'},
-			set_selection: false,
-			indent_relative: !noIndent,
-			value: text,
-			hasAttribute: function(name) { return (name in this); },
-			getStringAttribute: function(name) { return ('' + this[name]); }
-		};
+		var ANCHOR_MARKER, CURRENTPOS_MARKER;
+		if (!koSnippet) {
+			koSnippet = ko.toolbox2.createPartFromType('snippet');
+			koSnippet.type = 'snippet';
+			koSnippet.setStringAttribute('name', 'xemmet-temp-snippet');
+			koSnippet.setStringAttribute('set_selection', 'false');
+			koSnippet.setStringAttribute('auto_abbreviation', 'false');
+		}
+		koSnippet.setStringAttribute('indent_relative', '' + (!noIndent));
+		ANCHOR_MARKER = '!@#_anchor';
+		CURRENTPOS_MARKER = '!@#_currentPos';
+		text = `${ANCHOR_MARKER}${text}${CURRENTPOS_MARKER}`;
+		koSnippet.value = text;
+		return koSnippet;
 	}
 	
 	return {
